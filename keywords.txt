@@ -1,0 +1,22 @@
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+GYEMS	KEYWORD1	GYEMS
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+Int16ToByteData	KEYWORD2
+Int32ToByteData	KEYWORD2
+Int64ToByteData	KEYWORD2
+Make12BitData	KEYWORD2
+GetCurrentDEG	KEYWORD2
+EstimateDPS	KEYWORD2
+GetAverageSpeed	KEYWORD2
+ReadReply	KEYWORD2
+SpeedControl	KEYWORD2
+PositionControlMode1	KEYWORD2
+PositionControlMode2	KEYWORD2
+PositionControlMode3	KEYWORD2
+PositionControlMode4	KEYWORD2
