@@ -4,7 +4,7 @@ This servo is a brushless dc servo motor, which communicating via RS485. The ser
 
 This project, I made an Arduino library to communicate with "RMD-L-70 15" serie. So if you are using a MCU as Arduino or equivalent controller, please feel free to modify and adjust to your application.
 
-![](image/servo.png)
+![](images/servo.png)
 
 # Hardware
 1. GYEMS servo motor
@@ -17,12 +17,12 @@ This project, I made an Arduino library to communicate with "RMD-L-70 15" serie.
 First, you may need to config the servo with the software provided from manufacturer [This link](http://www.gyems.cn/support/download), at the moment I was developing this one, the site is Chinese, so try to find the link as specified as "RMD-S Assistant".
 After download and install the software, you can follow everthing as the "servo motor instruction" file said, but I will notice you something that you should turn your servo by hand and click set on "Motor Zero Position", try to adjust the servo to make the value of that box as close as zero. This will make your servo read the correct value when the servo reply back from "Read the encoder command" in our control. Then you are almost ready to control this servo!
 
-![](image/adjustvalue.PNG)
+![](images/adjustvalue.PNG)
 
 # Install
 Download this repository and copy the whole thing to \Documents\Arduino\libraries\ on your PC, it's the directory of all your downloaded Arduino libraries. If you have all the stuff already, please make a wiring according to this image below
 
-![](image/wiring.PNG)
+![](images/wiring.PNG)
 
 # Source Code and Explanation
 First, let me confess that I am not the professional programmer, so the style of coding in mine might not make someone happy, so please be kind to me and understand this, I will try explain as much as I can :)
@@ -53,7 +53,7 @@ The servo itself, it just needs byte data which construct as Header and Frame da
   ```
   So `digitalWrite()` is used for that, then start writing the first byte to the last byte. After finish write the data, you may need to `Serial1.flush()` then pull the pin2 to LOW for waiting the reply from servo. I made a capture from my logic analyzer, so you can see that D2 captures the logic of Pin2 of Arduino, D0 and D1 capture Tx1 and Rx1 of Arduino and decode as shown below.
   
-  ![](image/logic.PNG)
+  ![](images/logic.PNG)
   
 D2 was set to HIGH to let the data send, after the last byte was sent, D2 was set back to low, then around 170 us later , the servo replied back to Rx1 pin as shown. To receive the incoming byte data will need to wait until the data is available and read it, I did it like this code in `ReadReply()` function.
 ```
