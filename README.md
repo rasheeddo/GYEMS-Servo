@@ -115,3 +115,4 @@ void loop() {
 ```
 After include the header file, specify the servo ID, in the `setup()` you may need to call `Serial.begin(9600)` for printing to screen. You can uncomment the control mode you want to test with and see the result on motor and also read the encoder data by uncomment the command in `loop()` according to your control mode, Positon control or Speed control.
 
+
