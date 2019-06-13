@@ -89,9 +89,11 @@ private:
     int _currentPosition;
     byte Header = 0x3E;
     byte _ID;
-    unsigned char EncoderReply[8] = {0,0,0,0,0,0,0,0};
-    unsigned char ReadByte;
+    
+    unsigned char ReadByte = 0;
     float OutputDeg;
+    float CurrentDeg;
+
     float t2;
     float t1 = 0.0;
     float period;

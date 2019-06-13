@@ -10,6 +10,8 @@
 GYEMS::GYEMS(int ID)
 {
   _ID = (byte)ID;                                       // simply convert int to hex
+  //Serial.print("_ID,HEX   ");
+  //Serial.println(_ID,HEX);
   pinMode(RS485_EN, OUTPUT);                            // set enable pin for RS485 module as pin 2 of Arduino
 
   
@@ -53,7 +55,6 @@ unsigned int GYEMS::Make12BitData(unsigned char loByte, unsigned char hiByte)
 {
   unsigned int word;
   unsigned int Ang12Bit;
-  float DEG;
 
   word = (loByte & 0xFF) | ( (hiByte & 0xFF) << 8);       // construct 2 bytes data to a single 16 bits int
   Ang12Bit = map(word,0,16383,0,4095);                    // simply convert 16 bits to 12 bits data
@@ -65,35 +66,72 @@ float GYEMS::ReadReply()
 {
   int i = 0;
   bool ReadOK = false;
+  unsigned char EncoderReply[8] = {0,0,0,0,0,0,0,0};
   unsigned int EncoderData = 0;
-  float CurrentDeg;
-
-  while (Serial1.available() > 0)                         // wait for incoming data on Rx
+  float startTime;
+  //Serial.println(Serial1.read());
+  //while(Serial1.read() > 0);
+  //Serial.println(Serial1.available());
+  //Serial.println(ReadOK);
+  while ((Serial1.available() > 0))                         // wait for incoming data on Rx
   {
     ReadByte = Serial1.read();                            // read incoming byte
     EncoderReply[i] = ReadByte;                           // store it in array
+    //Serial.println(i);
+    //Serial.println(EncoderReply[i],HEX);
+    //delayMicroseconds(1000);
     i++;
+    
     ReadOK = true;
   }
+  Serial.print("i ");
+  Serial.println(i);
   if (ReadOK == true)
   {
     //Serial.println("ReadReply");
     EncoderData = Make12BitData(EncoderReply[5],EncoderReply[6]); // byte5 and byte 6 are lo-byte and hi-hyte of encoder data
-    //Serial.println(EncoderData);
+    /*
+    startTime = micros();
+    Serial.println("EncoderReply");
+    Serial.println(EncoderReply[0],HEX);
+    Serial.println(EncoderReply[1],HEX);
+    Serial.println(EncoderReply[2],HEX);
+    Serial.println(EncoderReply[3],HEX);
+    Serial.println(EncoderReply[4],HEX);
+    Serial.println(EncoderReply[5],HEX);
+    Serial.println(EncoderReply[6],HEX);
+    Serial.println(EncoderReply[7],HEX);
+    period = (micros() - startTime)*0.000001;
+    Serial.println(period, 7);
+    */
+    delayMicroseconds(2000);                      // THIS DELAY IS IMPORTANT to make reading two IDs not mix up
+                                                  // similar with the one in GetCurrentDEG()
+                                                  // above Serial.print() takes around 2.0~2.5ms and it solves the issue!
+                                                  // so instead of print something out, i just mimic it as delay
+
     CurrentDeg = map(EncoderData,0,4095,0.0,360.0);       // simply convert 12bits data to degree
+    //ReadOK = false;
     //Serial.println(CurrentDeg);
+    //delayMicroseconds(500);
+    //digitalWrite(RS485_EN,HIGH); 
   }
+
   return CurrentDeg;
 }
 
 float GYEMS::GetCurrentDEG()
 {
-
+  
   byte EncoderCommand = 0x90;
   byte DataLength = 0x00;
   byte DataCheckByte = Header + EncoderCommand + _ID + DataLength;
+  float startTime;
+
+  Serial.print("ID is   ");
+  Serial.println(_ID,HEX);
   
   // send a command to servo to request a current position
+
   digitalWrite(RS485_EN,HIGH);                            // Pulling the pin 2 HIGH for sending via Tx
   delayMicroseconds(50);                                  // delay a bit before start sending...
   Serial1.write(Header);
@@ -103,18 +141,36 @@ float GYEMS::GetCurrentDEG()
   Serial1.write(DataCheckByte);
   Serial1.flush();
   digitalWrite(RS485_EN,LOW);                            // Pulling the pin 2 LOW for receving via Rx
+  /*
+  Serial.println("GetCurrentDEG");
+  startTime = micros();
+  Serial.println(Header,HEX);
+  Serial.println(EncoderCommand,HEX);
+  Serial.println(_ID,HEX);
+  Serial.println(DataLength,HEX);
+  Serial.println(DataCheckByte,HEX);
+  period = (micros() - startTime)*0.000001;
+  Serial.println(period, 7);
+  */
+  delayMicroseconds(800);                         // THIS DELAY IS IMPORTANT to make reading two IDs not mix up
+                                                  // DO NOT CHANGE THIS VALUE!!
+                                                  // above Serial.print() takes around 0.6~0.7ms and it solves the issue!
+                                                  // so instead of print something out, i just mimic it as delay
 
   //startTime = micros();
   OutputDeg = ReadReply();                              // This function takes around 0.01 sec
+  delayMicroseconds(800);                               // This delay will make the next incoming data not crash, when reading more than one servo 
   //period = (micros() - startTime)*0.000001;
   //Serial.println(period, 7);
-  //Serial.println(OutputDeg);
+ // Serial.print("OutputDeg    ");
+  //Serial.println(OutputDeg,DEC);
+
 
   return OutputDeg;
 }
 
 float GYEMS::EstimateDPS()
-{
+{float OutputDeg;
   byte EncoderCommand = 0x90;
   byte DataLength = 0x00;
   byte DataCheckByte = Header + EncoderCommand + _ID + DataLength;
@@ -275,9 +331,14 @@ void GYEMS::PositionControlMode2(unsigned long long Deg, unsigned long DPS)
   Serial1.write(SpeedByte[0]);
   Serial1.write(DataCheckByte);
   Serial1.flush();
+
   digitalWrite(RS485_EN,LOW);
 
-  //ReadReply();
+
+
+
+  //ReadReply(); 
+
  
 }
 
