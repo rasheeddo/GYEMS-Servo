@@ -117,6 +117,52 @@ void loop() {
 After include the header file, specify the servo ID, in the `setup()` you may need to call `Serial.begin(9600)` for printing to screen. You can uncomment the control mode you want to test with and see the result on motor and also read the encoder data by uncomment the command in `loop()` according to your control mode, Positon control or Speed control.
 
 ## ThreeServo
-When using multiple servo, you can make the wiring and connect all of the servo like this diagram.
+When using multiple servo, you need to set the next servo with other ID like 2, 3,...and so on. To change the ID first open the gyems motor config software, select COM PORT then connect as usaul way. As the figure below, you need to change the ID at the "Drive ID" box to other number. Once you did it, disconnect, restart the servo and before connect it again, you need to select right ID at "ID" box to access the servo ID you just changed.
 
+![](images/setid.PNG)
+
+After changing all of the servo ID with different number, you can connect all of the servo as figure below to your Arduino.
+
+![](images/multipleservo.PNG)
+
+Open the ThreeServo.ino sketch, you just make an instance of the GYEMS class called GS1, GS2, GS3 as 
+```
+#include <GYEMS.h>
+
+int servo1 = 1;     //motorID
+int servo2 = 2;
+int servo3 = 3;
+
+GYEMS GS1(servo1);
+GYEMS GS2(servo2);
+GYEMS GS3(servo3);
+```
+Then you can control each servo in the control mode you want like,
+
+```
+GS1.PositionControlMode2(90,180);
+GS2.PositionControlMode2(180,360);
+GS3.PositionControlMode2(240,720);
+```
+
+All read the present angle data of each servo like,
+```
+void loop() {
+
+  OutputDeg = GS1.GetCurrentDEG();       // uncomment to get current angle, if using PositionControlMode1, 2, 3, or 4
+  OutputDeg2 = GS2.GetCurrentDEG();       // uncomment to get current angle, if using PositionControlMode1, 2, 3, or 4
+  OutputDeg3 = GS3.GetCurrentDEG();       // uncomment to get current angle, if using PositionControlMode1, 2, 3, or 4
+
+  // Open Serial Monitor to see the value printing out...
+  Serial.print("Output Angle1 : ");
+  Serial.println(OutputDeg);      // uncomment to print current angle, if using PositionControlMode1, 2, 3, or 4
+  Serial.print("Output Angle2 : ");
+  Serial.println(OutputDeg2);      // uncomment to print current angle, if using PositionControlMode1, 2, 3, or 4
+  Serial.print("Output Angle3 : ");
+  Serial.println(OutputDeg3);      // uncomment to print current angle, if using PositionControlMode1, 2, 3, or 4
+  Serial.println("--------------------");
+  
+  delay(500); // a bit of delay to make the screen readable
+}
+```
 
