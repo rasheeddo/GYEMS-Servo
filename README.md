@@ -77,6 +77,7 @@ So if you want to get data of an encoder in degree just call `GetCurrentDEG()`, 
 If you are working on speed control and want to know the feedback of the speed data, just call `GetAverageSpeed` function. It does the same thing as get encoder data but also estimate the speed until average the speed. This function is a simple idea, if you have anything better than this, please feel free to add your own algorithm.
 
 # Example
+## TestLib
 Go to the example folder, you will see TestLib.ino , so open that file in Arduino IDE and upload it to your Arduino.
 ```
 #include <GYEMS.h>
@@ -114,5 +115,8 @@ void loop() {
 }
 ```
 After include the header file, specify the servo ID, in the `setup()` you may need to call `Serial.begin(9600)` for printing to screen. You can uncomment the control mode you want to test with and see the result on motor and also read the encoder data by uncomment the command in `loop()` according to your control mode, Positon control or Speed control.
+
+## ThreeServo
+When using multiple servo, you can make the wiring and connect all of the servo like this diagram.
 
 
