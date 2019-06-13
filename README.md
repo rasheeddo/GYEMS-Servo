@@ -51,7 +51,7 @@ The servo itself, it just needs byte data which construct as Header and Frame da
   Serial1.flush();
   digitalWrite(RS485_EN,LOW);                            // Pulling the pin 2 LOW for receving via Rx
   ```
-  So `digitalWrite()` is used for that, then start writing the first byte to the last byte. After finish write the data, you may need to `Serial1.flush()` then pull the pin2 to LOW for waiting the reply from servo. I made a capture from my logic analyzer, so you can see that D2 captures the logic of Pin2 of Arduino, D0 and D1 capture Tx1 and Rx1 of Arduino and decode as shown below.
+  So `digitalWrite()` is used for that, then start writing the first byte to the last byte. After finish write the data, you may need to `Serial1.flush()` to make sure all the data byte done transmittig, then pull the pin2 to LOW for waiting the reply from servo. I made a capture from my logic analyzer, so you can see that D2 captures the logic of Pin2 of Arduino, D0 and D1 capture Tx1 and Rx1 of Arduino and decode as shown below.
   
   ![](images/logic.PNG)
   
