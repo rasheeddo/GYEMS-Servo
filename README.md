@@ -1,8 +1,8 @@
 # GYEMS Servo Motor
 
-This servo is a brushless dc servo motor, which communicating via RS485. The servo is controlled by sending a data packt according to the desired control mode. For more detail about this product, please check on "servo motor instruction" file. 
+This servo is a brushless servo motor, which communicating via RS485. The servo is controlled by sending a data packt according to the desired control mode. For more detail about this product, please check on "RMD-L Servo Motor Manual V1.2 -EN" file. 
 
-This project, I made an Arduino library to communicate with "RMD-L-70 15" serie. So if you are using a MCU as Arduino or equivalent controller, please feel free to modify and adjust to your application.
+This project, I made an Arduino library to communicate with "RMD-L" series. So if you are using an MCU as Arduino or equivalent controller, please feel free to modify and adjust to your application.
 
 ![](images/servo.png)
 
@@ -14,10 +14,11 @@ This project, I made an Arduino library to communicate with "RMD-L-70 15" serie.
 5. Battery (7.0 to 30.0 V)
 
 # Let's start!
-First, you may need to config the servo with the software provided from manufacturer [This link](http://www.gyems.cn/support/download), at the moment I was developing this one, the site is Chinese, so try to find the link as specified as "RMD-S Assistant".
-After download and install the software, you can follow everthing as the "servo motor instruction" file said, but I will notice you something that you should turn your servo by hand and click set on "Motor Zero Position", try to adjust the servo to make the value of that box as close as zero. This will make your servo read the correct value when the servo reply back from "Read the encoder command" in our control. Then you are almost ready to control this servo!
+First, you may need to config the servo with the software provided from manufacturer [This link](http://www.gyems.cn/support/download) or download the zip file "RMD-L config Setup V1.1", extract then install the program. Open the program, it's called "RMD-L config V1.1". After the window opened, connect your servo to your pc via RS485-USB module. Select COM port and ID (default is 1) to connect the servo. You can read/write parameter of PID gain and try test it on Test tab.
 
-![](images/adjustvalue.PNG)
+![](images/newconfig.PNG)
+
+![](images/testpage.PNG)
 
 # Install
 Download this repository and copy the whole thing to \Documents\Arduino\libraries\ on your PC, it's the directory of all your downloaded Arduino libraries. If you have all the stuff already, please make a wiring according to this image below
@@ -27,12 +28,15 @@ Download this repository and copy the whole thing to \Documents\Arduino\librarie
 # Source Code and Explanation
 First, let me confess that I am not the professional programmer, so the style of coding in mine might not make someone happy, so please be kind to me and understand this, I will try explain as much as I can :)
 
-There are 5 control mode you can play with from this library.
-1. SpeedControl(DPS), by passing desired speed in the unit of degree per seconds (DPS) to the function
-2. PositionControlMode1(Deg), by passing the desired position in degree, then the servo will turn with maximum speed (720DPS). This is multi turn mode, the servo has maximum rotation as 3600 degrees (10 turns)
-3. PositionControlMode2(Deg,DPS), by passing the desired position in degree and desired speed in DPS. This is multi turn mode similar as PositionControlMode1.
-4. PositionControlMode3(Deg, Direction), by passing the desired position and direction, the servo will turn with maximum speed (720DPS). This is a single turn mode, so the max value of Deg is 360 and direction can be 0 for clockwise and 1 for counter-clockwise.
-5. PositionControlMode4(Deg, DPS, Direction), by passing the desired position, speed and direction as unit specified before. This is a single turn mode, so the max value of Deg is 360.
+There are 6 control mode you can play with from this library.
+1. TorqueControl(Torque), by passing the raw value between -5000 to +5000, the actual torque depends on servo spec. This is closed loop torque control, so the motor will spin forever until the current torque reach your input value.
+2. SpeedControl(DPS), by passing desired speed in the unit of degree per seconds (DPS) to the function
+3. PositionControlMode1(Deg), by passing the desired position in degree, then the servo will turn with maximum speed (720DPS). This is multi turn mode, the servo has maximum rotation as 3600 degrees (10 turns)
+4. PositionControlMode2(Deg,DPS), by passing the desired position in degree and desired speed in DPS. This is multi turn mode similar as PositionControlMode1.
+5. PositionControlMode3(Deg, Direction), by passing the desired position and direction, the servo will turn with maximum speed (720DPS). This is a single turn mode, so the max value of Deg is 360 and direction can be 0 for clockwise and 1 for counter-clockwise.
+6. PositionControlMode4(Deg, DPS, Direction), by passing the desired position, speed and direction as unit specified before. This is a single turn mode, so the max value of Deg is 360.
+
+The control mode above are similar as Test page in RMD-L config software you installed before.
 
 The servo itself, it just needs byte data which construct as Header and Frame data. The simplest way that I figured out is just using Serial1.write(...HEX...). So if I need 8bytes data I just use Serial1.write() 8 times....as simple as that. This will send the byte data to Tx1 port of Arduino. So to make the servo able to receive this command data from us, we need to set pin2 of the Arduino or the RS485_EN pin to logic HIGH, to make the module knows that we want to send data. From GYEMS.cpp, that part is the code below
 ```
