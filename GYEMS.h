@@ -10,7 +10,7 @@
 #include "Arduino.h"
 
 #define RS485_EN 2
-#define MAXDPS 720
+#define MAXDPS 30000
 
 class GYEMS
 {
@@ -39,7 +39,11 @@ public:
 
     unsigned int Make12BitData(unsigned char loByte, unsigned char hiByte);
     // Mak12BitData: construct 2 bytes data from low byte and high byte into a single WORD (16 bits)
-    // then convert that 16 bits data to 12 bits data  (ref. to the GYEMS servo instruction )
+    // then convert that 16 bits data to 12 bits data  (for encoder data of RMD-S series)
+
+    unsigned int Make14BitData(unsigned char loByte, unsigned char hiByte);
+    // Mak14BitData: construct 2 bytes data from low byte and high byte into a single WORD (16 bits)
+    // then convert that 16 bits data to 14 bits data  (for encoder data of RMD-L series)
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,8 +69,29 @@ public:
     // output of this function will give us a current position of encoder as 12bit data (0-4095)
     // return an angle data in degree
 
-    void SpeedControl(unsigned long DPS);
+    void MotorOff();
+    // MotorOff: Turn off the motor and clear the motor running status and the previously received control commands.
+
+    void MotorStop();
+    // MotorStop: stop the motor but does not clear the motor running status and the previously received control command.
+
+    void MotorRun();
+    // MotorStop: continue run the motor from MotorStop(), control mode would be same as before stop
+
+    void SetZero();
+    // SetZero: set current motor position as zero position
+    // NOTE from factory instruction manual
+    // 1． The command will be valid after power on again.
+	// 2． The command will write the zero point to the drive FLASH memory. Multiple writes will affect the chip life. 
+	// It is not recommended to use it frequently
+
+    void TorqueControl(unsigned int Torque);
+    // TorqueControl: closed loop torque control
+    // Input is the ratio of torque from -5000 to +5000, the actual torque depends on motor's model
+
+    void SpeedControl(float DPS);
     // SpeedControl: this function is to control the speed of servo in degree per second (dps or DPS). max. value is 720DPS.
+    // The direction of the motor is determined from the sign of input DPS
 
     void PositionControlMode1(unsigned long long Deg);
     // PositionControlMode1: The servo will run with maximum speed as config (720dps as default) to the desired position "Deg"

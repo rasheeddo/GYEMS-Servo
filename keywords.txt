@@ -11,10 +11,16 @@ Int16ToByteData	KEYWORD2
 Int32ToByteData	KEYWORD2
 Int64ToByteData	KEYWORD2
 Make12BitData	KEYWORD2
+Make14BitData	KEYWORD2
 GetCurrentDEG	KEYWORD2
 EstimateDPS	KEYWORD2
 GetAverageSpeed	KEYWORD2
 ReadReply	KEYWORD2
+MotorOff	KEYWORD2
+MotorStop	KEYWORD2
+MotorRun	KEYWORD2
+SetZero		KEYWORD2
+TorqueControl	KEYWORD2
 SpeedControl	KEYWORD2
 PositionControlMode1	KEYWORD2
 PositionControlMode2	KEYWORD2

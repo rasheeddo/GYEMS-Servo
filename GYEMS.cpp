@@ -62,6 +62,18 @@ unsigned int GYEMS::Make12BitData(unsigned char loByte, unsigned char hiByte)
   return Ang12Bit;
 }
 
+unsigned int GYEMS::Make14BitData(unsigned char loByte, unsigned char hiByte)
+{
+  unsigned int word;
+  unsigned int Ang14Bit;
+
+  Ang14Bit = (loByte & 0xFF) | ( (hiByte & 0xFF) << 8);       // construct 2 bytes data to a single 16 bits int
+                                                              // even the total data length is 16 bits but the encoder can count only 14 bits
+
+  return Ang14Bit;
+}
+
+
 float GYEMS::ReadReply()
 {
   int i = 0;
@@ -84,12 +96,12 @@ float GYEMS::ReadReply()
     
     ReadOK = true;
   }
-  Serial.print("i ");
-  Serial.println(i);
+  //Serial.print("i ");
+  //Serial.println(i);
   if (ReadOK == true)
   {
     //Serial.println("ReadReply");
-    EncoderData = Make12BitData(EncoderReply[5],EncoderReply[6]); // byte5 and byte 6 are lo-byte and hi-hyte of encoder data
+    EncoderData = Make14BitData(EncoderReply[5],EncoderReply[6]); // byte5 and byte 6 are lo-byte and hi-hyte of encoder data
     /*
     startTime = micros();
     Serial.println("EncoderReply");
@@ -108,8 +120,10 @@ float GYEMS::ReadReply()
                                                   // similar with the one in GetCurrentDEG()
                                                   // above Serial.print() takes around 2.0~2.5ms and it solves the issue!
                                                   // so instead of print something out, i just mimic it as delay
-
-    CurrentDeg = map(EncoderData,0,4095,0.0,360.0);       // simply convert 12bits data to degree
+    //Serial.println(EncoderReply[5],HEX);
+    //Serial.println(EncoderReply[6],HEX);
+    //Serial.println(EncoderData);
+    CurrentDeg = map((float)EncoderData,0.0,16383.0,0.0,360.0);       // simply convert 16bits data to degree
     //ReadOK = false;
     //Serial.println(CurrentDeg);
     //delayMicroseconds(500);
@@ -127,8 +141,8 @@ float GYEMS::GetCurrentDEG()
   byte DataCheckByte = Header + EncoderCommand + _ID + DataLength;
   float startTime;
 
-  Serial.print("ID is   ");
-  Serial.println(_ID,HEX);
+  //Serial.print("ID is   ");
+  //Serial.println(_ID,HEX);
   
   // send a command to servo to request a current position
 
@@ -170,7 +184,8 @@ float GYEMS::GetCurrentDEG()
 }
 
 float GYEMS::EstimateDPS()
-{float OutputDeg;
+{
+
   byte EncoderCommand = 0x90;
   byte DataLength = 0x00;
   byte DataCheckByte = Header + EncoderCommand + _ID + DataLength;
@@ -235,15 +250,122 @@ float GYEMS::GetAverageSpeed()
 
 }
 
-void GYEMS::SpeedControl(unsigned long DPS){
+void GYEMS::MotorOff()
+{
+
+  byte OffCommand = 0x80;
+  byte DataLength = 0x00;
+  byte DataCheckByte = Header + OffCommand + _ID + DataLength;
+
+  digitalWrite(RS485_EN,HIGH);                            // Pulling the pin 2 HIGH for sending via Tx
+  delayMicroseconds(50);                                  // delay a bit before start sending...
+  Serial1.write(Header);
+  Serial1.write(OffCommand);
+  Serial1.write(_ID);
+  Serial1.write(DataLength);
+  Serial1.write(DataCheckByte);
+  Serial1.flush();
+  digitalWrite(RS485_EN,LOW);                            // Pulling the pin 2 LOW for receving via Rx
+
+  delayMicroseconds(800);
+
+}
+
+void GYEMS::MotorStop()
+{
+
+  byte StopCommand = 0x81;
+  byte DataLength = 0x00;
+  byte DataCheckByte = Header + StopCommand + _ID + DataLength;
+
+  digitalWrite(RS485_EN,HIGH);                            // Pulling the pin 2 HIGH for sending via Tx
+  delayMicroseconds(50);                                  // delay a bit before start sending...
+  Serial1.write(Header);
+  Serial1.write(StopCommand);
+  Serial1.write(_ID);
+  Serial1.write(DataLength);
+  Serial1.write(DataCheckByte);
+  Serial1.flush();
+  digitalWrite(RS485_EN,LOW);                            // Pulling the pin 2 LOW for receving via Rx
+
+  delayMicroseconds(800);
+
+}
+
+void GYEMS::MotorRun()
+{
+
+  byte RunCommand = 0x88;
+  byte DataLength = 0x00;
+  byte DataCheckByte = Header + RunCommand + _ID + DataLength;
+
+  digitalWrite(RS485_EN,HIGH);                            // Pulling the pin 2 HIGH for sending via Tx
+  delayMicroseconds(50);                                  // delay a bit before start sending...
+  Serial1.write(Header);
+  Serial1.write(RunCommand);
+  Serial1.write(_ID);
+  Serial1.write(DataLength);
+  Serial1.write(DataCheckByte);
+  Serial1.flush();
+  digitalWrite(RS485_EN,LOW);                            // Pulling the pin 2 LOW for receving via Rx
+
+  delayMicroseconds(800);
+
+}
+
+void GYEMS::Setzero()
+{
+  byte SetZeroCommand = 0x19;
+  byte DataLength = 0x00;
+  byte DataCheckByte = Header + SetZero + _ID + DataLength;
+
+  digitalWrite(RS485_EN,HIGH);                            // Pulling the pin 2 HIGH for sending via Tx
+  delayMicroseconds(50);                                  // delay a bit before start sending...
+  Serial1.write(Header);
+  Serial1.write(SetZero);
+  Serial1.write(_ID);
+  Serial1.write(DataLength);
+  Serial1.write(DataCheckByte);
+  Serial1.flush();
+  digitalWrite(RS485_EN,LOW);                            // Pulling the pin 2 LOW for receving via Rx
+
+  delayMicroseconds(800);
+}
+
+void GYEMS::TorqueControl(unsigned int Torque)
+{
+  // Torque is a raw value, actual torque depends on the motor spec
+
+  byte TorqueCommand = 0xA1;
+  byte DataLength = 0x02;
+  byte FrameCheckSum = Header + TorqueCommand + DataLength + _ID;
+  unsigned char TorqueByte[2];
+  Int16ToByteData(Torque,TorqueByte);
+  byte DataCheckByte = TorqueByte[1] + TorqueByte[0];
+
+  digitalWrite(RS485_EN,HIGH);
+  delayMicroseconds(50);
+  Serial1.write(Header);
+  Serial1.write(TorqueCommand);
+  Serial1.write(_ID);
+  Serial1.write(DataLength);
+  Serial1.write(FrameCheckSum);
+  Serial1.write(TorqueByte[1]);
+  Serial1.write(TorqueByte[0]);
+  Serial1.write(DataCheckByte);
+  Serial1.flush();
+  digitalWrite(RS485_EN,LOW);
+}
+
+void GYEMS::SpeedControl(float DPS){
   
   // DPS is degree per second
-  unsigned long SpeedLSB = DPS*100;
+  float SpeedLSB = DPS*100;
   byte SpeedCommand = 0xA2;
   byte DataLength = 0x04;
   byte FrameCheckSum = Header + SpeedCommand + DataLength + _ID;
   unsigned char SpeedByte[4];
-  Int32ToByteData(SpeedLSB,SpeedByte);
+  Int32ToByteData((int)SpeedLSB,SpeedByte);
   byte DataCheckByte = SpeedByte[3] + SpeedByte[2] + SpeedByte[1] + SpeedByte[0];
 
   digitalWrite(RS485_EN,HIGH);
@@ -265,7 +387,8 @@ void GYEMS::SpeedControl(unsigned long DPS){
 }
 
 void GYEMS::PositionControlMode1(unsigned long long Deg)
-{
+{ 
+  float CurrentDeg;
   unsigned long long DegLSB = Deg*100;
   byte PositionCommand1 = 0xA3;
   byte DataLength = 0x08;
@@ -292,8 +415,10 @@ void GYEMS::PositionControlMode1(unsigned long long Deg)
   Serial1.write(DataCheckByte);
   Serial1.flush();
   digitalWrite(RS485_EN,LOW);
-
-  //ReadReply();
+  //delayMicroseconds(800); 
+  //CurrentDeg = ReadReply();
+  //delayMicroseconds(800); 
+  //Serial.println(CurrentDeg);
  
 }
 
